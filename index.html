@@ -257,7 +257,7 @@
         /* ===== O JEITO YANDEH DE SER — 8 cartas interativas ===== */
         /* Para editar as frases/ícones, veja "const JEITO" lá no <script>. */
         .jeito-wrap { width: 100%; max-width: 1180px; margin: 3.6rem auto 0; text-align: left; }
-        .jeito-kicker { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; letter-spacing: 0.3em;
+        .jeito-kicker { font-family: 'JetBrains Mono', monospace; font-size: 0.95rem; letter-spacing: 0.3em;
             text-transform: uppercase; color: var(--cinza-escuro); text-align: center;
             display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1.9rem; }
         .jeito-kicker::before, .jeito-kicker::after { content: ''; width: 34px; height: 1px; background: var(--red-line); }
@@ -1090,6 +1090,43 @@
             .jor-drawer.jor-go .jor-ben-ico svg *, .jor-drawer.jor-go .jor-tip-ico svg * { animation: none; stroke-dasharray: none; stroke-dashoffset: 0; }
             .jor-title .ln > span, .jor-title .hl::after { transition: none; }
         }
+
+        /* crescimento: gráfico de subida */
+        .jor-growth { margin: 2.2rem 0 2.6rem; }
+        .jor-gr-svg { width: 100%; height: auto; display: block; overflow: visible; }
+        .gr-base { fill: none; stroke: rgba(255,255,255,0.18); stroke-width: 2; stroke-dasharray: 2 9; stroke-linecap: round; }
+        .gr-bar { transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0); transition: transform 1s cubic-bezier(0.16, 1, 0.3, 1) calc(var(--i) * 180ms); }
+        .jor-growth.visible .gr-bar { transform: scaleY(1); }
+        .gr-line { fill: none; stroke: var(--red-line); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1000; stroke-dashoffset: 1000; filter: drop-shadow(0 0 6px var(--red-line-glow)); transition: stroke-dashoffset 1.8s ease 0.9s; }
+        .jor-growth.visible .gr-line { stroke-dashoffset: 0; }
+        .gr-node { fill: #0c0a0a; stroke: var(--red-line); stroke-width: 2; opacity: 0; transition: opacity 0.5s ease calc(var(--i) * 180ms + 600ms); }
+        .jor-growth.visible .gr-node { opacity: 1; }
+        .gr-num { font-family: 'JetBrains Mono', monospace; font-size: 22px; font-weight: 700; fill: var(--branco); }
+        .gr-lbl { font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.16em; fill: var(--cinza-claro); }
+        .gr-rocket { opacity: 0; filter: drop-shadow(0 0 6px var(--red-line-glow)); transition: opacity 0.6s ease 2.4s; }
+        .jor-growth.visible .gr-rocket { opacity: 1; }
+        @media (max-width: 760px) { .jor-growth { display: none; } }
+        @media (prefers-reduced-motion: reduce) {
+            .gr-bar, .gr-line, .gr-node, .gr-rocket { transition: none; }
+            .gr-line { stroke-dashoffset: 0; }
+        }
+
+        /* crescimento: trajetória (rota com paradas) */
+        .tr-base { fill: none; stroke: rgba(255,255,255,0.16); stroke-width: 2; stroke-dasharray: 2 9; stroke-linecap: round; }
+        .tr-line { fill: none; stroke: var(--red-line); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 1200; stroke-dashoffset: 1200; filter: drop-shadow(0 0 6px var(--red-line-glow)); transition: stroke-dashoffset 2.2s ease 0.2s; }
+        .jor-growth.visible .tr-line { stroke-dashoffset: 0; }
+        .tr-st circle { fill: #0c0a0a; stroke: var(--red-line); stroke-width: 2.5; opacity: 0; transition: opacity 0.5s ease calc(var(--i) * 550ms + 300ms), fill 0.4s ease; }
+        .jor-growth.visible .tr-st circle { opacity: 1; }
+        .tr-st:last-child circle { fill: var(--red-line); filter: drop-shadow(0 0 12px var(--red-line-glow)); }
+        .tr-num { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 700; fill: var(--branco); dominant-baseline: central; text-anchor: middle; }
+        .tr-lbl { font-family: 'JetBrains Mono', monospace; font-size: 14px; letter-spacing: 0.16em; fill: var(--cinza-claro); opacity: 0; transition: opacity 0.6s ease calc(var(--i) * 550ms + 500ms); }
+        .jor-growth.visible .tr-lbl { opacity: 1; }
+        .tr-rocket { opacity: 0; filter: drop-shadow(0 0 6px var(--red-line-glow)); transition: opacity 0.6s ease 2.6s; }
+        .jor-growth.visible .tr-rocket { opacity: 1; }
+        @media (prefers-reduced-motion: reduce) {
+            .tr-line, .tr-st circle, .tr-lbl, .tr-rocket { transition: none; }
+            .tr-line { stroke-dashoffset: 0; }
+        }
     </style>
 </head>
 <body>
@@ -1427,13 +1464,11 @@
             <div class="final-line reveal highlight">Mas o jeito como a gente trabalha?</div>
             <div class="final-line reveal highlight">Isso você vive.</div>
             <div class="jor-wrap">
-                <p class="jor-kicker">05 — Sua jornada</p>
-                <h2 class="jor-title reveal"><span class="ln"><span>Do primeiro papo</span></span><span class="ln"><span class="hl">à decolagem.</span></span></h2>
-                <p class="jor-status reveal">3 etapas · 1 destino · <span class="jor-caret">lançamento em preparação</span></p>
+                <p class="jor-kicker">Jornada da pessoa candidata</p>
                 <div class="jor-drawer" id="jor-drawer">
                 <button class="jor-drawer-btn" id="jor-drawer-btn" type="button" aria-expanded="false" aria-controls="jor-drawer-corpo">
                     <span class="jor-drawer-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="5" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><circle cx="19" cy="6" r="2"/><path d="M7 6h10M12 16V8"/></svg></span>
-                    <span class="jor-drawer-txt">Ver a jornada do candidato</span>
+                    <span class="jor-drawer-txt">Do primeiro papo à decolagem.</span>
                     <span class="jor-drawer-seta" aria-hidden="true">&#9660;</span>
                 </button>
                 <div class="jor-drawer-corpo" id="jor-drawer-corpo">
@@ -1592,6 +1627,21 @@
             <div class="jor-block reveal">
                 <h3 class="jor-expect-title">Crescimento na Yandeh</h3>
                 <p class="jor-lead">O desenvolvimento acontece todos os dias, por meio de novos desafios, aprendizado contínuo e oportunidades para assumir mais responsabilidades. O crescimento profissional é reconhecido de forma estruturada e considera diferentes aspectos da trajetória de cada pessoa.</p>
+                <div class="jor-growth reveal" aria-hidden="true">
+                    <svg viewBox="0 -30 1000 330" class="jor-gr-svg" role="img">
+                        <path class="tr-base" d="M40 250 C 110 250, 120 230, 170 230 C 240 230, 300 120, 390 120 C 470 120, 540 200, 620 200 C 700 200, 780 50, 860 50 C 900 50, 930 30, 960 24"/>
+                        <path class="tr-line" d="M40 250 C 110 250, 120 230, 170 230 C 240 230, 300 120, 390 120 C 470 120, 540 200, 620 200 C 700 200, 780 50, 860 50 C 900 50, 930 30, 960 24"/>
+                        <g class="tr-st" style="--i:0"><circle cx="170" cy="230" r="22"/><text class="tr-num" x="170" y="230">01</text><text class="tr-lbl" x="170" y="290" text-anchor="middle">RESULTADOS</text></g>
+                        <g class="tr-st" style="--i:1"><circle cx="390" cy="120" r="22"/><text class="tr-num" x="390" y="120">02</text><text class="tr-lbl" x="390" y="82" text-anchor="middle">COMPORTAMENTO</text></g>
+                        <g class="tr-st" style="--i:2"><circle cx="620" cy="200" r="22"/><text class="tr-num" x="620" y="200">03</text><text class="tr-lbl" x="620" y="266" text-anchor="middle">EXPERIÊNCIA</text></g>
+                        <g class="tr-st" style="--i:3"><circle cx="860" cy="50" r="22"/><text class="tr-num" x="860" y="50">04</text><text class="tr-lbl" x="860" y="12" text-anchor="middle">TRAJETÓRIA</text></g>
+                        <g class="tr-rocket" transform="translate(966 20) rotate(45)">
+                            <path d="M0 -11 C 5 -7 6 -2 6 3 L6 6 L0 4 L-6 6 L-6 3 C -6 -2 -5 -7 0 -11Z" fill="#e9e2d3"/>
+                            <circle cx="0" cy="-2" r="2" fill="#1a1a1a"/>
+                            <path d="M-3 6 L0 15 L3 6Z" fill="#FF2E01"/>
+                        </g>
+                    </svg>
+                </div>
                 <div class="jor-grid-4">
                     <div class="card jor-tip">
                         <div class="jor-tip-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 20V12M12 20V6M19 20v-9"/></svg></div>
@@ -2092,7 +2142,7 @@
             { t: 0.52, size: 5.6,  year: '2016',      title: 'Fase 1',
               c: '16,146,152', c2: '106,236,222',
               text: 'Alfredo retoma a visão empreendedora com a Yandeh, que nasce como atacado digital — ainda sem inteligência de dados e com vendas feitas manualmente.' },
-            { t: 0.75, size: 7.6,  year: '2020',      title: 'Virada de chave', destaque: true,
+            { t: 0.75, size: 7.6,  year: '2020',      title: 'O nascimento da Yandeh de hoje', destaque: true,
               c: '196,116,22', c2: '255,208,124',
               text: 'Em 2020, a Yandeh vira a chave. O marketplace ganha nome próprio, AbasteceShop, e a empresa começa a explorar o universo dos produtos digitais. A mudança de nome foi o passo que formalizou a Yandeh como um guarda-chuva de soluções para toda a jornada comercial.' },
             { t: 0.97, size: 7.4,  year: '2022–2026', title: 'Atualmente',
@@ -2208,7 +2258,7 @@
                 // o card veste a cor do marco: borda, ano e rastro conversam com o planeta
                 card.style.setProperty('--c', m.c); card.style.setProperty('--c2', m.c2);
                 if (rocket) rocket.style.setProperty('--c2', m.c2);
-                card.innerHTML = (m.destaque ? '<span class="hpx-badge">Virada de chave</span>' : '') + '<div class="hpx-id">'
+                card.innerHTML = '<div class="hpx-id">' + ''
                                +   '<span class="hpx-year">' + m.year + '</span>'
                                +   '<span class="hpx-title">' + m.title + '</span>'
                                + '</div>'
@@ -3060,7 +3110,7 @@
             btn.addEventListener('click', () => {
                 const abriu = drawer.classList.toggle('aberta');
                 btn.setAttribute('aria-expanded', String(abriu));
-                if (txt) txt.textContent = abriu ? 'Recolher a jornada do candidato' : 'Ver a jornada do candidato';
+                if (txt) txt.textContent = 'Do primeiro papo à decolagem.';
                 if (abriu) drawer.querySelectorAll('.reveal').forEach(el => el.classList.add('visible'));
             });
         })();
